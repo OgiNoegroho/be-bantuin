@@ -1,4 +1,3 @@
-// File: src/notifications/notifications.module.ts
 import { Global, Module } from '@nestjs/common';
 import { NotificationService } from './notifications.service';
 import { NotificationsController } from './notifications.controller';

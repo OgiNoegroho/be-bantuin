@@ -1,4 +1,3 @@
-// File: src/notifications/notifications.service.ts
 import { Injectable } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
 import type { PrismaClient } from '@prisma/client';

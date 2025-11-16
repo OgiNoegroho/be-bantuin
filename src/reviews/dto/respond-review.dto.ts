@@ -1,4 +1,3 @@
-// File: src/reviews/dto/respond-review.dto.ts
 import { z } from 'zod';
 
 export const RespondReviewSchema = z.object({

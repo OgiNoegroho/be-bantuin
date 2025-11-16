@@ -1,4 +1,3 @@
-// File: src/wallet/dto/payout-request.dto.ts
 import { z } from 'zod';
 
 export const CreatePayoutRequestSchema = z.object({

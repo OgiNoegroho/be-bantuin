@@ -1,4 +1,3 @@
-// File: src/disputes/disputes.controller.ts
 import {
   Controller,
   Get,
