@@ -103,4 +103,30 @@ export class AdminController {
       data: dispute,
     };
   }
+
+  /**
+   * [Admin] Mendapatkan statistik dashboard
+   * GET /api/admin/dashboard/stats
+   */
+  @Get('dashboard/stats')
+  async getDashboardStats() {
+    const stats = await this.adminService.getDashboardStats();
+    return {
+      success: true,
+      data: stats,
+    };
+  }
+
+  /**
+   * [Admin] Mendapatkan riwayat uang masuk (Escrow Release / Kredit)
+   * GET /api/admin/dashboard/income-history
+   */
+  @Get('dashboard/income-history')
+  async getIncomeHistory() {
+    const history = await this.adminService.getIncomeHistory();
+    return {
+      success: true,
+      data: history,
+    };
+  }
 }

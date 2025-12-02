@@ -29,7 +29,10 @@ export class AdminService {
         user: {
           select: { id: true, fullName: true, email: true },
         },
-        account: true, // Info rekening bank
+        account: true,
+        wallet: {
+          select: { balance: true },
+        }, 
       },
     });
   }
@@ -218,4 +221,75 @@ export class AdminService {
       return resolvedDispute;
     });
   }
+
+  /**
+   * [Admin] Mendapatkan statistik dashboard (Total Saldo & Total Pendapatan)
+   * Menggunakan aggregasi Prisma untuk perhitungan yang efisien.
+   */
+  async getDashboardStats() {
+    // 1. Hitung Total Saldo Keseluruhan (Sum of all active wallets)
+    const totalBalanceResult = await this.prisma.wallet.aggregate({
+      _sum: {
+        balance: true,
+      },
+    });
+    
+    // 2. Hitung Total Pendapatan Platform (10% dari total order COMPLETED)
+    const totalCompletedOrdersPrice = await this.prisma.order.aggregate({
+        where: {
+            status: 'COMPLETED',
+        },
+        _sum: {
+            price: true,
+        },
+    });
+
+    // 3. Hitung Total Pengguna Aktif (Bukan Admin dan tidak di-ban) <-- BARU
+    const totalActiveUsers = await this.prisma.user.count({
+        where: {
+            role: {
+                not: 'ADMIN',
+            },
+            status: 'active',
+        },
+    });
+
+    // Asumsi fee platform 10%
+    const totalRevenue = totalCompletedOrdersPrice._sum.price ? totalCompletedOrdersPrice._sum.price.toNumber() * 0.1 : 0;
+
+    return {
+      totalUserBalance: totalBalanceResult._sum.balance || 0,
+      totalPlatformRevenue: totalRevenue,
+      totalActiveUsers: totalActiveUsers,
+    };
+  }
+  
+  /**
+   * [Admin] Mendapatkan riwayat uang masuk (Transaksi Kredit/Positif)
+   */
+  async getIncomeHistory() {
+    // Ambil transaksi yang bernilai positif (uang masuk/credit) ke wallet user.
+    return this.prisma.walletTransaction.findMany({
+      where: {
+        type: {
+          in: ['ESCROW_RELEASE', 'PAYOUT_REJECTED', 'DISPUTE_REFUND'],
+        },
+      },
+      orderBy: { createdAt: 'desc' },
+      take: 50,
+      include: {
+        wallet: {
+          select: {
+            user: {
+              select: { fullName: true, profilePicture: true },
+            },
+          },
+        },
+        order: {
+          select: { title: true },
+        },
+      },
+    });
+  }
+
 }
