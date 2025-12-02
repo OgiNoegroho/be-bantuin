@@ -16,6 +16,7 @@ import { PrismaService } from './prisma/prisma.service';
 import { PrismaModule } from './prisma/prisma.module';
 import { WalletsModule } from './wallets/wallets.module';
 import { ChatsModule } from './chats/chats.module';
+import { StorageModule } from './storage/storage.module';
 
 @Module({
   imports: [
@@ -35,6 +36,7 @@ import { ChatsModule } from './chats/chats.module';
     PrismaModule,
     WalletsModule,
     ChatsModule,
+    StorageModule,
   ],
   controllers: [AppController],
   providers: [AppService, PrismaService],
