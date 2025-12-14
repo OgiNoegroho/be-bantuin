@@ -111,6 +111,7 @@ model User {
   reportsReceived          Report[]                  @relation("ReportsReceived")
   pushSubscriptions        PushSubscription[]
 
+  activityLogs UserActivityLog[]
   @@map("users")
 }
 
@@ -457,4 +458,30 @@ model Report {
   @@index([reporterId])
   @@index([reportedUserId])
   @@map("reports")
+}
+
+model SecurityLog {
+  id        Int      @id @default(autoincrement())
+  timestamp DateTime @default(now())
+  level     String
+  ip        String
+  method    String
+  url       String
+  userAgent String?
+  payload   Json?
+  message   String
+  userId    String?
+}
+
+model UserActivityLog {
+  id        Int      @id @default(autoincrement())
+  userId    String
+  timestamp DateTime @default(now())
+  action    String
+  ip        String?
+  device    String?
+  status    String
+  details   String?
+
+  user      User     @relation(fields: [userId], references: [id])
 }
