@@ -5,16 +5,17 @@ import { PaymentsModule } from '../payments/payments.module';
 import { AdminModule } from '../admin/admin.module';
 import { NotificationsModule } from '../notifications/notifications.module';
 import { WalletsModule } from '../wallets/wallets.module';
+import { LogService } from 'src/common/log.service';
 
 @Module({
   imports: [
     PaymentsModule,
     forwardRef(() => AdminModule),
     NotificationsModule,
-    WalletsModule
+    WalletsModule,
   ],
   controllers: [OrdersController],
-  providers: [OrdersService],
+  providers: [OrdersService, LogService],
   exports: [OrdersService],
 })
-export class OrdersModule { }
+export class OrdersModule {}

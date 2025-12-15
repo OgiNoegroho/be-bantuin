@@ -20,10 +20,14 @@ import {
   UpdateServiceDto,
   ServiceFilterDto,
 } from './dto/service.dto';
+import { LogService } from 'src/common/log.service';
 
 @Controller('services')
 export class ServicesController {
-  constructor(private readonly servicesService: ServicesService) {}
+  constructor(
+    private readonly servicesService: ServicesService,
+    private readonly logService: LogService,
+  ) {}
 
   /**
    * Create a new service
@@ -41,6 +45,14 @@ export class ServicesController {
       sellerId,
       createServiceDto,
     );
+
+    // LOG PENAMBAHAN JASA
+    await this.logService.userActivityLog({
+      userId: sellerId,
+      action: 'create_service',
+      status: 'success',
+      details: `Created service : ${createServiceDto.title ?? 'Untitled'} || ID: ${service.id}`,
+    });
 
     return {
       success: true,
@@ -114,6 +126,14 @@ export class ServicesController {
       updateServiceDto,
     );
 
+    // Log Update Jasa
+    await this.logService.userActivityLog({
+      userId: sellerId,
+      action: 'update_service',
+      status: 'success',
+      details: `Updated service : ${service.title} || ID: ${service.id}`,
+    });
+
     return {
       success: true,
       message: 'Jasa berhasil diperbarui',
@@ -130,6 +150,13 @@ export class ServicesController {
   @UseGuards(JwtAuthGuard)
   async toggleActive(@Param('id') id: string, @GetUser('id') sellerId: string) {
     const service = await this.servicesService.toggleActive(id, sellerId);
+
+    await this.logService.userActivityLog({
+      userId: sellerId,
+      action: 'toggle_service_active',
+      status: 'success',
+      details: `${service.isActive ? 'Mengaktifkan' : 'Menonaktifkan'} jasa "${service.title ?? 'Tanpa Judul'}" (ID: ${id})`,
+    });
 
     return {
       success: true,
@@ -149,6 +176,14 @@ export class ServicesController {
   @UseGuards(JwtAuthGuard)
   async remove(@Param('id') id: string, @GetUser('id') sellerId: string) {
     const result = await this.servicesService.remove(id, sellerId);
+
+    // Log Hapus Jasa
+    await this.logService.userActivityLog({
+      userId: sellerId,
+      action: 'delete_service',
+      status: 'success',
+      details: `Deleted service ID: ${id}`,
+    });
 
     return {
       success: true,

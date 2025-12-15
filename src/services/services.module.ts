@@ -1,6 +1,7 @@
 import { Module } from '@nestjs/common';
 import { ServicesService } from './services.service';
 import { ServicesController } from './services.controller';
+import { LogService } from 'src/common/log.service';
 
 /**
  * Services Module
@@ -16,7 +17,7 @@ import { ServicesController } from './services.controller';
  */
 @Module({
   controllers: [ServicesController], // Register the HTTP controller
-  providers: [ServicesService], // Register the business logic service
+  providers: [ServicesService, LogService], // Register the business logic service
   exports: [ServicesService], // Export service for use in other modules (e.g., Orders)
 })
 export class ServicesModule {}

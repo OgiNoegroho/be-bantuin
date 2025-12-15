@@ -10,6 +10,7 @@ import { EventEmitter2 } from '@nestjs/event-emitter';
 import * as midtransClient from 'midtrans-client';
 import type { Order, User } from '@prisma/client';
 import { createHmac } from 'crypto';
+import { LogService } from 'src/common/log.service';
 
 @Injectable()
 export class PaymentsService {
@@ -20,6 +21,7 @@ export class PaymentsService {
     private configService: ConfigService,
     private prisma: PrismaService,
     private eventEmitter: EventEmitter2,
+    private readonly logService: LogService,
   ) {
     this.midtransServerKey = this.configService.get<string>(
       'MIDTRANS_SERVER_KEY',
@@ -241,12 +243,49 @@ export class PaymentsService {
       // 2. Dapatkan payment record
       const payment = await this.prisma.payment.findUnique({
         where: { orderId: originalOrderId }, // <-- Cari berdasarkan ID Order Asli
+        include: { order: { select: { buyerId: true } } },
       });
 
       if (!payment) {
         console.error(`Payment not found for Order ID: ${originalOrderId}`);
         throw new NotFoundException('Payment record not found');
       }
+
+      const buyerId = payment.order.buyerId;
+
+      // Tentukan status log
+      let logAction = 'payment_unknown';
+      let logStatus = 'pending';
+      let logDetails = `Payment webhook: ${transaction_status}`;
+
+      if (
+        transaction_status === 'capture' ||
+        transaction_status === 'settlement'
+      ) {
+        const fraudStatus = payload.fraud_status as string | undefined;
+
+        if (fraudStatus === 'accept') {
+          logAction = 'payment_success';
+          logStatus = 'success';
+          logDetails = `Payment successful via ${payment_type || 'Midtrans'} (Amount: ${gross_amount})`;
+        }
+      } else if (['cancel', 'deny', 'expire'].includes(transaction_status)) {
+        logAction = 'payment_failed';
+        logStatus = 'failed';
+        logDetails = `Payment failed: ${transaction_status}`;
+      } else if (transaction_status === 'pending') {
+        logAction = 'payment_pending';
+        logStatus = 'pending';
+        logDetails = 'Payment is pending';
+      }
+
+      // CATAT LOG DENGAN USER ID BUYER
+      await this.logService.userActivityLog({
+        userId: buyerId,
+        action: logAction,
+        status: logStatus,
+        details: logDetails + ` (Order ID: ${originalOrderId})`,
+      });
 
       // 3. Idempotency Check
       if (

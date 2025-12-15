@@ -8,12 +8,14 @@ import type { Response, Request } from 'express';
 import { ConfigService } from '@nestjs/config';
 import type { User } from '@prisma/client';
 import { GoogleUserDto } from './dto/google-auth.dto';
+import { LogService } from '../common/log.service';
 
 @Controller('auth')
 export class AuthController {
   constructor(
     private readonly authService: AuthService,
     private readonly configService: ConfigService,
+    private readonly logService: LogService,
   ) {}
 
   @Public()
@@ -29,7 +31,6 @@ export class AuthController {
   async googleAuthRedirect(@Req() req: Request, @Res() res: Response) {
     try {
       const googleUser = req.user as GoogleUserDto;
-
       const result = await this.authService.googleLogin({
         email: googleUser.email,
         fullName: googleUser.fullName,
@@ -40,16 +41,22 @@ export class AuthController {
         batch: googleUser.batch,
       });
 
-      // 1. Tentukan Tujuan Redirect (Frontend URL)
-      // Default ambil dari ENV
-      let frontendUrl = this.configService.get<string>('FRONTEND_URL')!;
+      // LOG LOGIN BERHASIL
+      await this.logService.userActivityLog({
+        userId: result.user.id,
+        action: 'login',
+        ip: req.ip,
+        device: req.get('user-agent'),
+        status: 'success',
+        details: 'Logged in with Google OAuth',
+      });
 
-      // Cek apakah ada 'state' yang membawa returnUrl dinamis
-      if (req.query.state) {
+      let frontendUrl = this.configService.get<string>('FRONTEND_URL')!;
+      if (req.query.state && typeof req.query.state === 'string') {
         try {
           const stateJson = JSON.parse(
-            Buffer.from(req.query.state as string, 'base64').toString(),
-          );
+            Buffer.from(req.query.state, 'base64').toString('utf-8'),
+          ) as { returnUrl?: string };
           if (stateJson.returnUrl) {
             frontendUrl = stateJson.returnUrl;
             console.log('Dynamic redirect to:', frontendUrl);
@@ -58,18 +65,22 @@ export class AuthController {
           console.error('Failed to parse OAuth state:', error);
         }
       }
-
-      // Pastikan tidak ada trailing slash
       frontendUrl = frontendUrl.replace(/\/$/, '');
-
-      // Redirect dengan token
       const redirectUrl = `${frontendUrl}/auth/callback?token=${result.access_token}`;
       return res.redirect(redirectUrl);
     } catch (error) {
-      // Gunakan frontendUrl default dari env untuk error fallback
+      // LOG LOGIN GAGAL
+      await this.logService.userActivityLog({
+        userId: 'unknown',
+        action: 'login',
+        ip: req.ip,
+        device: req.get('user-agent'),
+        status: 'failed',
+        details: `Google login failed: ${error instanceof Error ? error.message : 'Unknown error'}`,
+      });
+
       const frontendUrl = this.configService.get<string>('FRONTEND_URL');
-      const errorMessage =
-        error instanceof Error ? error.message : 'Authentication failed';
+      const errorMessage = error instanceof Error ? error.message : 'Authentication failed';
       return res.redirect(
         `${frontendUrl}/auth/error?message=${encodeURIComponent(errorMessage)}`,
       );
@@ -104,9 +115,17 @@ export class AuthController {
 
   @Post('logout')
   @UseGuards(JwtAuthGuard)
-  logout() {
-    // Guard sudah memastikan user terautentikasi.
-    // Jika logic logout tidak butuh data user, hapus saja.
+  async logout(@Req() req: Request) {
+    const userId = (req as Request & { user?: { id: string } }).user?.id || 'unknown';
+    await this.logService.userActivityLog({
+      userId,
+      action: 'logout',
+      ip: req.ip,
+      device: req.get('user-agent'),
+      status: 'success',
+      details: 'Logged out successfully',
+    });
+
     return {
       statusCode: 200,
       message: 'Logged out successfully',

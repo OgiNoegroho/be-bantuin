@@ -14,11 +14,14 @@ import { GetUser } from '../auth/decorators/get-user.decorator';
 import { Public } from '../auth/decorators/public.decorator';
 import type { CreateReviewDto } from './dto/create-review.dto';
 import type { RespondReviewDto } from './dto/respond-review.dto';
+import { LogService } from 'src/common/log.service';
 
 @Controller('reviews')
 export class ReviewsController {
-  constructor(private readonly reviewsService: ReviewsService) {}
-
+  constructor(
+    private readonly reviewsService: ReviewsService,
+    private readonly logService: LogService,
+  ) {}
   /**
    * [Buyer] Membuat review baru untuk order yang selesai
    * POST /api/reviews/order/:orderId
@@ -36,6 +39,15 @@ export class ReviewsController {
       orderId,
       dto,
     );
+
+    // LOG REVIEW DIBUAT
+    await this.logService.userActivityLog({
+      userId: buyerId,
+      action: 'create_review',
+      status: 'success',
+      details: `Created review with ID: ${review.id} for order ID: ${orderId}`,
+    });
+
     return {
       success: true,
       message: 'Review berhasil ditambahkan',
@@ -59,6 +71,15 @@ export class ReviewsController {
       reviewId,
       dto,
     );
+
+    // LOG REVIEW DITANGGAPI
+    await this.logService.userActivityLog({
+      userId: sellerId,
+      action: 'respond_review',
+      status: 'success',
+      details: `Responded to review with ID: ${reviewId}`,
+    });
+
     return {
       success: true,
       message: 'Tanggapan berhasil dikirim',

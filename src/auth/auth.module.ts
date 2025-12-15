@@ -9,6 +9,7 @@ import { JwtStrategy } from './strategies/jwt-strategy';
 import { JwtAuthGuard } from './guards/jwt-auth.guard';
 import { APP_GUARD } from '@nestjs/core';
 import { PrismaModule } from '../prisma/prisma.module';
+import { LogService } from 'src/common/log.service';
 
 @Module({
   imports: [
@@ -37,6 +38,7 @@ import { PrismaModule } from '../prisma/prisma.module';
     AuthService,
     GoogleStrategy,
     JwtStrategy,
+    LogService,
     {
       provide: APP_GUARD,
       useClass: JwtAuthGuard,

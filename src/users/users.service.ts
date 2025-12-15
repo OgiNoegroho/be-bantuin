@@ -15,7 +15,7 @@ export class UsersService {
   constructor(
     private prisma: PrismaService,
     private configService: ConfigService,
-  ) { }
+  ) {}
 
   async findById(id: string) {
     const user = await this.prisma.user.findUnique({
@@ -84,7 +84,6 @@ export class UsersService {
 
     return user;
   }
-
 
   async activateSeller(userId: string, phoneNumber: string, bio: string) {
     // Check if user exists
@@ -359,7 +358,8 @@ export class UsersService {
     const stored = this.otpStore.get(userId);
 
     if (!stored) {
-      throw new BadRequestException('Tidak ada permintaan verifikasi yang aktif');
+      throw new BadRequestException(
+        'Tidak ada permintaan verifikasi yang aktif');
     }
 
     if (Date.now() > stored.expiresAt) {

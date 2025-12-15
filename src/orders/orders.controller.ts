@@ -21,11 +21,15 @@ import type {
   AddProgressDto,
 } from './dto/order.dto';
 import { Order } from '@prisma/client';
+import { LogService } from 'src/common/log.service';
 
 @Controller('orders')
 @UseGuards(JwtAuthGuard)
 export class OrdersController {
-  constructor(private readonly ordersService: OrdersService) {}
+  constructor(
+    private readonly ordersService: OrdersService,
+    private readonly logService: LogService,
+  ) {}
 
   /**
    * Buat order baru
@@ -43,6 +47,14 @@ export class OrdersController {
       buyerId,
       createOrderDto,
     );
+
+    // LOG PEMBUATAN ORDER
+    await this.logService.userActivityLog({
+      userId: buyerId,
+      action: 'create_order',
+      status: 'success',
+      details: `Created order for service ID: ${createOrderDto.serviceId} || Order ID: ${order.id}`,
+    });
 
     return {
       success: true,
@@ -66,6 +78,14 @@ export class OrdersController {
   ) {
     const result = await this.ordersService.confirmOrder(orderId, buyerId);
 
+    // Log Konfirmasi Orderan
+    await this.logService.userActivityLog({
+      userId: buyerId,
+      action: 'confirm_order',
+      status: 'success',
+      details: `Confirmed order ID: ${orderId}, Waiting For Payment.`,
+    });
+
     return {
       success: true,
       message: result.message,
@@ -87,6 +107,14 @@ export class OrdersController {
     @GetUser('id') sellerId: string,
   ) {
     const order = await this.ordersService.startWork(orderId, sellerId);
+
+    // Log Mulai Pengerjaan
+    await this.logService.userActivityLog({
+      userId: sellerId,
+      action: 'start_work',
+      status: 'success',
+      details: `Started work on order ID: ${orderId}.`,
+    });
 
     return {
       success: true,
@@ -113,6 +141,14 @@ export class OrdersController {
       deliverDto,
     );
 
+    // Log Pengiriman Hasil Kerja
+    await this.logService.userActivityLog({
+      userId: sellerId,
+      action: 'deliver_work',
+      status: 'success',
+      details: `Delivered work for order ID: ${orderId}.`,
+    });
+
     return {
       success: true,
       message: 'Hasil kerja berhasil dikirim. Menunggu persetujuan buyer.',
@@ -138,6 +174,14 @@ export class OrdersController {
       dto,
     );
 
+    // Log Permintaan Revisi
+    await this.logService.userActivityLog({
+      userId: buyerId,
+      action: 'request_revision',
+      status: 'success',
+      details: `Requested revision for order ID: ${orderId}.`,
+    });
+
     return {
       success: true,
       message: 'Permintaan revisi berhasil dikirim.',
@@ -160,6 +204,14 @@ export class OrdersController {
     @GetUser('id') buyerId: string,
   ) {
     const order = await this.ordersService.approveWork(orderId, buyerId);
+
+    // Log Persetujuan Hasil Kerja
+    await this.logService.userActivityLog({
+      userId: buyerId,
+      action: 'approve_work',
+      status: 'success',
+      details: `Approved work for order ID: ${orderId}`,
+    });
 
     return {
       success: true,
@@ -189,6 +241,14 @@ export class OrdersController {
         cancelDto,
       );
 
+    // Log Pembatalan Orderan oleh Buyer
+    await this.logService.userActivityLog({
+      userId: buyerId,
+      action: 'cancel_order',
+      status: 'success',
+      details: `Cancelled order ID: ${orderId} as buyer${result.refunded ? ' (refunded)' : ''}`,
+    });
+
     return {
       success: true,
       message: result.refunded
@@ -217,6 +277,14 @@ export class OrdersController {
         'seller',
         cancelDto,
       );
+
+    // Log Pembatalan Orderan oleh Seller
+    await this.logService.userActivityLog({
+      userId: sellerId,
+      action: 'cancel_order',
+      status: 'success',
+      details: `Cancelled order ID: ${orderId} as seller ${result.refunded ? ' (refunded)' : ''}`,
+    });
 
     return {
       success: true,

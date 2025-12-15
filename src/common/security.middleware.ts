@@ -35,7 +35,6 @@ export class SecurityMiddleware implements NestMiddleware {
         userAgent: req.get('user-agent') ?? undefined,
         payload: req.body as unknown,
         message: 'Request blocked: IP temporarily banned due to brute force or high rate',
-        userId: undefined,
       });
 
       return res.status(403).json({
@@ -67,7 +66,6 @@ export class SecurityMiddleware implements NestMiddleware {
           userAgent: req.get('user-agent') ?? undefined,
           payload: req.body as unknown,
           message: `IP blocked for 10 minutes due to high request rate: ${data.count} requests in 60s (possible scan/DoS)`,
-          userId: undefined,
         });
 
         return res.status(403).json({
@@ -101,7 +99,6 @@ export class SecurityMiddleware implements NestMiddleware {
           userAgent: req.get('user-agent') ?? undefined,
           payload: req.body as unknown,
           message: `IP blocked for 10 minutes due to brute force: ${data.loginAttempts} attempts`,
-          userId: undefined,
         });
 
         return res.status(403).json({
@@ -125,7 +122,6 @@ export class SecurityMiddleware implements NestMiddleware {
         userAgent: req.get('user-agent') ?? undefined,
         payload: req.body as unknown,
         message: 'Possible attack detected (keyword match)',
-        userId: (req as Request & { user?: { id: string } }).user?.id ?? undefined,
       });
     }
 

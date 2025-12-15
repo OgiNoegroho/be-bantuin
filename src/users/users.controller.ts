@@ -16,11 +16,15 @@ import type { ActivateSellerDto } from './dto/activate-seller.dto';
 import { RequestPhoneVerificationDto, VerifyPhoneDto } from './dto/phone-verification.dto';
 import { UpdateProfileDto } from './dto/update-profile.dto';
 import { Public } from 'src/auth/decorators/public.decorator';
+import { LogService } from 'src/common/log.service';
 
 @Controller('users')
 @UseGuards(JwtAuthGuard)
 export class UsersController {
-  constructor(private readonly usersService: UsersService) { }
+  constructor(
+    private readonly usersService: UsersService,
+    private readonly logService: LogService,
+  ) {}
 
   @Get('profile')
   async getProfile(@GetUser('id') userId: string) {
@@ -37,6 +41,15 @@ export class UsersController {
     @Body() dto: UpdateProfileDto,
   ) {
     const user = await this.usersService.updateProfile(userId, dto);
+
+    // LOG UPDATE PROFILE
+    await this.logService.userActivityLog({
+      userId: userId,
+      action: 'update_profile',
+      status: 'success',
+      details: 'User updated their profile information',
+    });
+
     return {
       success: true,
       message: 'Profil berhasil diperbarui',
@@ -55,6 +68,15 @@ export class UsersController {
       dto.phoneNumber,
       dto.bio,
     );
+
+    // LOG ACTIVATE SELLER
+    await this.logService.userActivityLog({
+      userId: userId,
+      action: 'activate_seller',
+      status: 'success',
+      details: 'User activated seller status',
+    });
+
     return {
       success: true,
       message: 'Berhasil menjadi penyedia jasa',
@@ -95,6 +117,15 @@ export class UsersController {
     @Body() dto: VerifyPhoneDto,
   ) {
     const user = await this.usersService.verifyPhone(userId, dto.otp);
+
+    // LOG VERIFY PHONE
+    await this.logService.userActivityLog({
+      userId: userId,
+      action: 'verify_phone',
+      status: 'success',
+      details: 'User verified their phone number',
+    });
+
     return {
       success: true,
       message: 'Nomor telepon berhasil diverifikasi',

@@ -3,21 +3,13 @@ import { Injectable } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
 import pino from 'pino';
 
-const isProduction = process.env.NODE_ENV === 'production';
-
-const logger = pino(
-  isProduction
-    ? {
-        level: 'warn',
-      }
-    : {
-        level: 'warn',
-        transport: {
-          target: 'pino-pretty',
-          options: { colorize: true },
-        },
-      },
-);
+const logger = pino({
+  level: 'warn',
+  transport: {
+    target: 'pino-pretty',
+    options: { colorize: true },
+  },
+});
 
 @Injectable()
 export class LogService {

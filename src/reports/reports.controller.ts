@@ -12,11 +12,15 @@ import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import { AdminGuard } from '../admin/guards/admin.guard';
 import { GetUser } from '../auth/decorators/get-user.decorator';
 import type { CreateReportDto } from './dto/create-report.dto';
+import { LogService } from 'src/common/log.service';
 
 @Controller('reports')
 @UseGuards(JwtAuthGuard)
 export class ReportsController {
-  constructor(private readonly reportsService: ReportsService) {}
+  constructor(
+    private readonly reportsService: ReportsService,
+    private readonly logService: LogService,
+  ) {}
 
   @Post()
   async createReport(
@@ -24,6 +28,15 @@ export class ReportsController {
     @Body() dto: CreateReportDto,
   ) {
     await this.reportsService.create(userId, dto);
+
+    // LOG CREATE REPORT
+    await this.logService.userActivityLog({
+      userId: userId,
+      action: 'create_report',
+      status: 'success',
+      details: 'User created a report',
+    });
+
     return {
       success: true,
       message: 'Laporan berhasil dikirim. Kami akan segera meninjaunya.',
