@@ -23,7 +23,7 @@ export class ServicesService {
   constructor(
     private prisma: PrismaService,
     private notificationService: NotificationsService,
-  ) {}
+  ) { }
 
   async create(sellerId: string, dto: CreateServiceDto) {
     // Verify that user is a seller
@@ -63,6 +63,16 @@ export class ServicesService {
           deliveryTime: dto.deliveryTime,
           revisions: dto.revisions,
           images: dto.images || [],
+
+          // New fields
+          pricingType: dto.pricingType,
+          pricePerUnit: dto.pricePerUnit,
+          minimumOrder: dto.minimumOrder,
+          requirements: dto.requirements,
+          whatsIncluded: dto.whatsIncluded,
+          additionalInfo: dto.additionalInfo,
+          faq: dto.faq,
+
           // New services must be reviewed by admin before being active
           status: 'PENDING' as any,
           isActive: false,

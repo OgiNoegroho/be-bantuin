@@ -15,6 +15,22 @@ export const CreateServiceSchema = z.object({
 
   category: z
     .enum([
+      // New Categories
+      'GRAPHIC_DESIGN',
+      'WEB_PROGRAMMING',
+      'MOBILE_APPS',
+      'WRITING_TRANSLATION',
+      'VIDEO_ANIMATION',
+      'MUSIC_AUDIO',
+      'DIGITAL_MARKETING',
+      'DATA_ENTRY_ANALYSIS',
+      'ACADEMIC_TUTORING',
+      'BUSINESS_VIRTUAL_ASSISTANT',
+      'PHOTOGRAPHY',
+      'LIFESTYLE',
+      'AI_SERVICES',
+
+      // Legacy Categories
       'DESIGN',
       'DATA',
       'CODING',
@@ -26,18 +42,18 @@ export const CreateServiceSchema = z.object({
     ])
     .describe('Kategori jasa'),
 
-  price: z
+  price: z.coerce
     .number()
     .positive({ message: 'Harga harus lebih dari 0' })
     .max(10000000, { message: 'Harga maksimal Rp 10.000.000' }),
 
-  deliveryTime: z
+  deliveryTime: z.coerce
     .number()
     .int()
     .positive({ message: 'Waktu pengerjaan harus lebih dari 0 hari' })
     .max(90, { message: 'Waktu pengerjaan maksimal 90 hari' }),
 
-  revisions: z
+  revisions: z.coerce
     .number()
     .int()
     .min(0, { message: 'Jumlah revisi minimal 0' })
@@ -45,7 +61,7 @@ export const CreateServiceSchema = z.object({
     .default(1),
 
   images: z
-    .array(z.string().url({ message: 'URL gambar tidak valid' }))
+    .array(z.string())
     .min(1, { message: 'Minimal 1 gambar diperlukan' })
     .max(5, { message: 'Maksimal 5 gambar' })
     .optional()
@@ -67,13 +83,13 @@ export const CreateServiceSchema = z.object({
     .optional()
     .describe('Tipe pricing sesuai jenis jasa'),
 
-  pricePerUnit: z
+  pricePerUnit: z.coerce
     .number()
     .positive({ message: 'Harga per unit harus lebih dari 0' })
     .optional()
     .describe('Harga per unit sesuai tipe pricing'),
 
-  minimumOrder: z
+  minimumOrder: z.coerce
     .number()
     .int()
     .positive({ message: 'Minimal order harus lebih dari 0' })
@@ -121,6 +137,22 @@ export const ServiceFilterSchema = z.object({
   q: z.string().optional(),
   category: z
     .enum([
+      // New Categories
+      'GRAPHIC_DESIGN',
+      'WEB_PROGRAMMING',
+      'MOBILE_APPS',
+      'WRITING_TRANSLATION',
+      'VIDEO_ANIMATION',
+      'MUSIC_AUDIO',
+      'DIGITAL_MARKETING',
+      'DATA_ENTRY_ANALYSIS',
+      'ACADEMIC_TUTORING',
+      'BUSINESS_VIRTUAL_ASSISTANT',
+      'PHOTOGRAPHY',
+      'LIFESTYLE',
+      'AI_SERVICES',
+
+      // Legacy Categories
       'DESIGN',
       'DATA',
       'CODING',

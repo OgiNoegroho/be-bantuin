@@ -53,33 +53,33 @@ model User {
 }
 
 model Service {
-  id              String        @id @default(cuid())
-  sellerId        String        @map("seller_id")
-  title           String
-  description     String
-  category        String
-  price           Decimal       @db.Decimal(10, 2)
-  deliveryTime    Int           @map("delivery_time")
-  revisions       Int           @default(1)
-  images          String[]
-  totalOrders     Int           @default(0) @map("total_orders")
-  avgRating       Decimal       @default(0) @map("avg_rating") @db.Decimal(3, 2)
-  totalReviews    Int           @default(0) @map("total_reviews")
-  status          ServiceStatus @default(ACTIVE)
-  isActive        Boolean       @default(true) @map("is_active")
-  createdAt       DateTime      @default(now()) @map("created_at")
-  updatedAt       DateTime      @updatedAt @map("updated_at")
-  additional_info String?
-  faq             Json?         @default("[]")
-  minimum_order   Int?
-  price_per_unit  Decimal?      @db.Decimal(10, 2)
-  pricing_type    String?
-  requirements    String?
-  whats_included  String?
-  adminNotes      String?       @map("admin_notes")
-  orders          Order[]
-  reviews         Review[]
-  seller          User          @relation("SellerServices", fields: [sellerId], references: [id], onDelete: Cascade)
+  id             String        @id @default(cuid())
+  sellerId       String        @map("seller_id")
+  title          String
+  description    String
+  category       String
+  price          Decimal       @db.Decimal(10, 2)
+  deliveryTime   Int           @map("delivery_time")
+  revisions      Int           @default(1)
+  images         String[]
+  totalOrders    Int           @default(0) @map("total_orders")
+  avgRating      Decimal       @default(0) @map("avg_rating") @db.Decimal(3, 2)
+  totalReviews   Int           @default(0) @map("total_reviews")
+  status         ServiceStatus @default(ACTIVE)
+  isActive       Boolean       @default(true) @map("is_active")
+  adminNotes     String?       @map("admin_notes")
+  createdAt      DateTime      @default(now()) @map("created_at")
+  updatedAt      DateTime      @updatedAt @map("updated_at")
+  additionalInfo String?       @map("additional_info")
+  faq            Json?         @default("[]")
+  minimumOrder   Int?          @map("minimum_order")
+  pricePerUnit   Decimal?      @map("price_per_unit") @db.Decimal(10, 2)
+  pricingType    String?       @map("pricing_type")
+  requirements   String?
+  whatsIncluded  String?       @map("whats_included")
+  orders         Order[]
+  reviews        Review[]
+  seller         User          @relation("SellerServices", fields: [sellerId], references: [id], onDelete: Cascade)
 
   @@index([sellerId])
   @@index([category])
@@ -382,7 +382,6 @@ model SecurityLog {
   userAgent String?
   payload   Json?
   message   String
-  userId    String?
 }
 
 model UserActivityLog {

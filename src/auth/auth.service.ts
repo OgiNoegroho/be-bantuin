@@ -15,7 +15,7 @@ export class AuthService {
     private prisma: PrismaService,
     private jwtService: JwtService,
     private walletService: WalletsService,
-  ) {}
+  ) { }
 
   async googleLogin(googleUser: GoogleUserDto): Promise<AuthResponseDto> {
     const { email, fullName, nim, major, batch, picture, googleId } =
@@ -46,15 +46,27 @@ export class AuthService {
       // BUATKAN WALLET UNTUK USER BARU
       await this.walletService.createWallet(user.id);
     } else {
-      // Update googleId jika user sudah ada tapi belum punya googleId
+      // Prepare update data
+      const updateData: any = {};
+
+      // Link Google Account if not linked
       if (!user.googleId) {
+        updateData.googleId = googleId;
+        updateData.isVerified = true;
+        updateData.emailVerifiedAt = user.emailVerifiedAt || new Date();
+      }
+
+      // Sync Profile Picture if missing or always sync? 
+      // Let's safe update: only if missing to respect manual uploads
+      if (!user.profilePicture && picture) {
+        updateData.profilePicture = picture;
+      }
+
+      // Execute update if there are changes
+      if (Object.keys(updateData).length > 0) {
         user = await this.prisma.user.update({
           where: { id: user.id },
-          data: {
-            googleId,
-            isVerified: true,
-            emailVerifiedAt: user.emailVerifiedAt || new Date(),
-          },
+          data: updateData,
         });
       }
     }
