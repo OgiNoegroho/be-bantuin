@@ -87,7 +87,7 @@ export class SecurityMiddleware implements NestMiddleware {
         data.loginAttempts++;
       }
 
-      if (data.loginAttempts > 10) {
+      if (data.loginAttempts > 20) {
         const blockUntil = now + 600_000;
         this.blockedIPs.set(ip, blockUntil);
 
@@ -108,9 +108,9 @@ export class SecurityMiddleware implements NestMiddleware {
     }
 
     // === 4. Keyword-based detection ===
-    const bodyStr = JSON.stringify(req.body ?? {}).toLowerCase();
+    // const bodyStr = JSON.stringify(req.body ?? {}).toLowerCase();
     const isSuspicious = SUSPICIOUS_PATTERNS.some((pattern) => {
-      return url.includes(pattern) || bodyStr.includes(pattern);
+      return url.includes(pattern);
     });
 
     if (isSuspicious) {
