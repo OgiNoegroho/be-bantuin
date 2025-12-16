@@ -24,7 +24,11 @@ interface SocketWithAuth extends Socket {
 @WebSocketGateway({
   cors: {
     origin: '*', // Ganti dengan FRONTEND_URL Anda di production
+    credentials: true,
   },
+  transports: ['polling', 'websocket'], // Support both for ngrok compatibility
+  pingTimeout: 60000,
+  pingInterval: 25000,
 })
 export class ChatsGateway implements OnGatewayConnection, OnGatewayDisconnect {
   @WebSocketServer()
