@@ -440,7 +440,7 @@ export class OrdersService {
     }
 
     // Validasi status untuk pembatalan
-    const cancellableStatuses = ['draft', 'waiting_payment', 'paid_escrow'];
+    const cancellableStatuses = ['DRAFT', 'WAITING_PAYMENT', 'PAID_ESCROW'];
     if (!cancellableStatuses.includes(order.status)) {
       throw new BadRequestException(
         'Order dengan status ini tidak bisa dibatalkan. Silakan buka dispute jika ada masalah.',
